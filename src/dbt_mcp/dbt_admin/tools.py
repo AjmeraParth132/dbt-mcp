@@ -13,7 +13,6 @@ from dbt_mcp.tools.annotations import create_tool_annotations
 from dbt_mcp.tools.definitions import ToolDefinition
 from dbt_mcp.tools.register import register_tools
 from dbt_mcp.tools.tool_names import ToolName
-from dbt_mcp.tools.error_handling import make_error_result
 
 logger = logging.getLogger(__name__)
 
@@ -49,30 +48,20 @@ def create_admin_api_tool_definitions(
         offset: int | None = None,
     ) -> list[dict[str, Any]] | str:
         """List jobs in an account."""
-        try:
-            params = {}
-            # if project_id:
-            #     params["project_id"] = project_id
-            if admin_api_config.prod_environment_id:
-                params["environment_id"] = admin_api_config.prod_environment_id
-            if limit:
-                params["limit"] = limit
-            if offset:
-                params["offset"] = offset
-            return admin_client.list_jobs(admin_api_config.account_id, **params)
-        except Exception as e:
-            logger.error(
-                f"Error listing jobs for account {admin_api_config.account_id}: {e}"
-            )
-            return make_error_result(str(e))
+        params = {}
+        # if project_id:
+        #     params["project_id"] = project_id
+        if admin_api_config.prod_environment_id:
+            params["environment_id"] = admin_api_config.prod_environment_id
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        return admin_client.list_jobs(admin_api_config.account_id, **params)
 
     def get_job_details(job_id: int) -> dict[str, Any] | str:
         """Get details for a specific job."""
-        try:
-            return admin_client.get_job_details(admin_api_config.account_id, job_id)
-        except Exception as e:
-            logger.error(f"Error getting job {job_id}: {e}")
-            return make_error_result(str(e))
+        return admin_client.get_job_details(admin_api_config.account_id, job_id)
 
     def trigger_job_run(
         job_id: int,
@@ -82,20 +71,16 @@ def create_admin_api_tool_definitions(
         schema_override: str | None = None,
     ) -> dict[str, Any] | str:
         """Trigger a job run."""
-        try:
-            kwargs = {}
-            if git_branch:
-                kwargs["git_branch"] = git_branch
-            if git_sha:
-                kwargs["git_sha"] = git_sha
-            if schema_override:
-                kwargs["schema_override"] = schema_override
-            return admin_client.trigger_job_run(
-                admin_api_config.account_id, job_id, cause, **kwargs
-            )
-        except Exception as e:
-            logger.error(f"Error triggering job {job_id}: {e}")
-            return make_error_result(str(e))
+        kwargs = {}
+        if git_branch:
+            kwargs["git_branch"] = git_branch
+        if git_sha:
+            kwargs["git_sha"] = git_sha
+        if schema_override:
+            kwargs["schema_override"] = schema_override
+        return admin_client.trigger_job_run(
+            admin_api_config.account_id, job_id, cause, **kwargs
+        )
 
     def list_jobs_runs(
         job_id: int | None = None,
@@ -105,25 +90,19 @@ def create_admin_api_tool_definitions(
         order_by: str | None = None,
     ) -> list[dict[str, Any]] | str:
         """List runs in an account."""
-        try:
-            params: dict[str, Any] = {}
-            if job_id:
-                params["job_definition_id"] = job_id
-            if status:
-                status_id = STATUS_MAP[status]
-                params["status"] = status_id
-            if limit:
-                params["limit"] = limit
-            if offset:
-                params["offset"] = offset
-            if order_by:
-                params["order_by"] = order_by
-            return admin_client.list_jobs_runs(admin_api_config.account_id, **params)
-        except Exception as e:
-            logger.error(
-                f"Error listing runs for account {admin_api_config.account_id}: {e}"
-            )
-            return make_error_result(str(e))
+        params: dict[str, Any] = {}
+        if job_id:
+            params["job_definition_id"] = job_id
+        if status:
+            status_id = STATUS_MAP[status]
+            params["status"] = status_id
+        if limit:
+            params["limit"] = limit
+        if offset:
+            params["offset"] = offset
+        if order_by:
+            params["order_by"] = order_by
+        return admin_client.list_jobs_runs(admin_api_config.account_id, **params)
 
     def get_job_run_details(
         run_id: int,
@@ -133,53 +112,31 @@ def create_admin_api_tool_definitions(
         ),
     ) -> dict[str, Any] | str:
         """Get details for a specific job run."""
-        try:
-            return admin_client.get_job_run_details(
-                admin_api_config.account_id, run_id, debug=debug
-            )
-        except Exception as e:
-            logger.error(f"Error getting run {run_id}: {e}")
-            return make_error_result(str(e))
-
+        return admin_client.get_job_run_details(
+            admin_api_config.account_id, run_id, debug=debug
+        )
+        
     def cancel_job_run(run_id: int) -> dict[str, Any] | str:
         """Cancel a job run."""
-        try:
-            return admin_client.cancel_job_run(admin_api_config.account_id, run_id)
-        except Exception as e:
-            logger.error(f"Error cancelling run {run_id}: {e}")
-            return make_error_result(str(e))
+        return admin_client.cancel_job_run(admin_api_config.account_id, run_id)
 
     def retry_job_run(run_id: int) -> dict[str, Any] | str:
         """Retry a failed job run."""
-        try:
-            return admin_client.retry_job_run(admin_api_config.account_id, run_id)
-        except Exception as e:
-            logger.error(f"Error retrying run {run_id}: {e}")
-            return make_error_result(str(e))
+        return admin_client.retry_job_run(admin_api_config.account_id, run_id)
 
     def list_job_run_artifacts(run_id: int) -> list[str] | str:
         """List artifacts for a job run."""
-        try:
-            return admin_client.list_job_run_artifacts(
-                admin_api_config.account_id, run_id
-            )
-        except Exception as e:
-            logger.error(f"Error listing artifacts for run {run_id}: {e}")
-            return make_error_result(str(e))
+        return admin_client.list_job_run_artifacts(
+            admin_api_config.account_id, run_id
+        )
 
     def get_job_run_artifact(
         run_id: int, artifact_path: str, step: int | None = None
     ) -> Any | str:
         """Get a specific job run artifact."""
-        try:
-            return admin_client.get_job_run_artifact(
-                admin_api_config.account_id, run_id, artifact_path, step
-            )
-        except Exception as e:
-            logger.error(
-                f"Error getting artifact {artifact_path} for run {run_id}: {e}"
-            )
-            return make_error_result(str(e))
+        return admin_client.get_job_run_artifact(
+            admin_api_config.account_id, run_id, artifact_path, step
+        )
 
     return [
         ToolDefinition(
