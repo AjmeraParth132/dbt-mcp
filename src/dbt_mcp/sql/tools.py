@@ -19,7 +19,6 @@ from mcp.server.fastmcp.utilities.func_metadata import (
 from mcp.shared.message import SessionMessage
 from mcp.types import (
     ContentBlock,
-    ServerResult,
     Tool,
 )
 from pydantic import Field, WithJsonSchema, create_model
@@ -29,7 +28,6 @@ from pydantic_core import PydanticUndefined
 from dbt_mcp.config.config import SqlConfig
 from dbt_mcp.tools.tool_names import ToolName
 from dbt_mcp.tools.toolsets import Toolset, toolsets
-from dbt_mcp.tools.error_handling import make_error_result
 
 logger = logging.getLogger(__name__)
 
@@ -133,22 +131,17 @@ async def register_sql_tools(
 
         # Create a new function using a factory to avoid closure issues
         def create_tool_function(tool_name: str):
-            async def tool_function(
-                *args, **kwargs
-            ) -> Sequence[ContentBlock] | ServerResult:
-                try:
-                    tool_call_result = await session.call_tool(
-                        tool_name,
-                        kwargs,
+            async def tool_function(*args, **kwargs) -> Sequence[ContentBlock]:
+                tool_call_result = await session.call_tool(
+                    tool_name,
+                    kwargs,
+                )
+                if tool_call_result.isError:
+                    raise ValueError(
+                        f"Tool {tool_name} reported an error: "
+                        + f"{tool_call_result.content}"
                     )
-                    if tool_call_result.isError:
-                        raise ValueError(
-                            f"Tool {tool_name} reported an error: "
-                            + f"{tool_call_result.content}"
-                        )
-                    return tool_call_result.content
-                except Exception as e:
-                    return make_error_result(str(e))
+                return tool_call_result.content
 
             return tool_function
 
