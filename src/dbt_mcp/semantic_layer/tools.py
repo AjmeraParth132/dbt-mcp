@@ -35,17 +35,17 @@ def create_sl_tool_definitions(
         config=config,
     )
 
-    def list_metrics(search: str | None = None) -> list[MetricToolResponse] | str:
+    def list_metrics(search: str | None = None) -> list[MetricToolResponse]:
         return semantic_layer_fetcher.list_metrics(search=search)
 
     def get_dimensions(
         metrics: list[str], search: str | None = None
-    ) -> list[DimensionToolResponse] | str:
+    ) -> list[DimensionToolResponse]:
         return semantic_layer_fetcher.get_dimensions(metrics=metrics, search=search)
 
     def get_entities(
         metrics: list[str], search: str | None = None
-    ) -> list[EntityToolResponse] | str:
+    ) -> list[EntityToolResponse]:
         return semantic_layer_fetcher.get_entities(metrics=metrics, search=search)
 
     def query_metrics(
